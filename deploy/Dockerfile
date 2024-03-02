@@ -1,7 +1,7 @@
 FROM golang:alpine AS builder
 WORKDIR /app
 COPY . .
-RUN rm go.work go.work.sum
+RUN rm -f go.work go.work.sum
 RUN go build -o app github.com/stdyum/api-studyplaces/cmd/studyplaces
 
 FROM alpine:latest
