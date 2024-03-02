@@ -7,7 +7,7 @@ require (
 	github.com/jackc/pgtype v1.14.1
 	github.com/lib/pq v1.10.9
 	github.com/pressly/goose/v3 v3.18.0
-	github.com/stdyum/api-common v0.0.0-20240229060835-307c4b986722
+	github.com/stdyum/api-common v0.0.0-20240302174919-44ee5554a313
 	google.golang.org/grpc v1.61.0
 )
 
