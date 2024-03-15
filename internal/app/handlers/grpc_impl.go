@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/stdyum/api-common/errors"
 	"github.com/stdyum/api-common/grpc"
 	"github.com/stdyum/api-common/proto/impl/studyplaces"
 	"github.com/stdyum/api-studyplaces/internal/app/dto"
@@ -13,7 +14,7 @@ import (
 func (h *gRPC) Auth(ctx context.Context, token *studyplaces.EnrollmentToken) (*studyplaces.EnrollmentUser, error) {
 	studyPlaceId, err := uuid.Parse(token.StudyPlaceId)
 	if err != nil {
-		return nil, grpc.ConvertError(err)
+		return nil, grpc.ConvertError(errors.WrapString(errors.ErrValidation, "study place id is not valid uuid"))
 	}
 
 	request := dto.AuthRequestDTO{

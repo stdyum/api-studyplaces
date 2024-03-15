@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/stdyum/api-common/errors"
 	"github.com/stdyum/api-common/models"
 	"github.com/stdyum/api-studyplaces/internal/app/entities"
 )
@@ -12,6 +14,10 @@ import (
 func (c *controller) enrollmentAuth(ctx context.Context, userId, studyPlaceId uuid.UUID, permissions ...models.Permission) (entities.Enrollment, error) {
 	enrollment, err := c.repository.GetUserEnrollmentByUserIdAndStudyPlaceId(ctx, userId, studyPlaceId)
 	if err != nil {
+		if errors.Is(sql.ErrNoRows, err) {
+			return entities.Enrollment{}, errors.WrapString(errors.ErrValidation, "study place does not exist")
+		}
+
 		return entities.Enrollment{}, err
 	}
 

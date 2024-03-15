@@ -13,7 +13,7 @@ import (
 
 var (
 	ErrNoPermissions = errors.New("no permission")
-	ErrValidation    = errors.New("incorrect group")
+	ErrValidation    = errors.New("validation")
 )
 
 type Controller interface {
