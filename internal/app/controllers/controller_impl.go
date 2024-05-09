@@ -150,14 +150,15 @@ func (c *controller) GetUserEnrollments(ctx context.Context, user models.User, q
 	for i, row := range rows {
 		timedRows[i] = row.Timed
 		enrollments[i] = dto.EnrollmentsResponseItemDTO{
-			ID:           row.ID,
-			UserId:       row.UserId,
-			StudyPlaceId: row.StudyPlaceId,
-			UserName:     row.UserName,
-			Role:         row.Role,
-			TypeId:       row.TypeId,
-			Permissions:  row.Permissions,
-			Accepted:     row.Accepted,
+			ID:              row.ID,
+			UserId:          row.UserId,
+			StudyPlaceId:    row.StudyPlaceId,
+			StudyPlaceTitle: row.StudyPlaceTitle,
+			UserName:        row.UserName,
+			Role:            row.Role,
+			TypeId:          row.TypeId,
+			Permissions:     row.Permissions,
+			Accepted:        row.Accepted,
 		}
 	}
 
@@ -168,6 +169,25 @@ func (c *controller) GetUserEnrollments(ctx context.Context, user models.User, q
 		Page:     query.QPage,
 		Next:     pagination.GetNextCreatedAtQuery(timedRows, total, &query),
 		Previous: pagination.GetPreviousCreatedAtQuery(timedRows, &query),
+	}, nil
+}
+
+func (c *controller) GetUserEnrollmentById(ctx context.Context, user models.User, enrollmentId uuid.UUID) (dto.EnrollmentsResponseItemDTO, error) {
+	enrollment, err := c.repository.GetUserEnrollmentByIdAndUserId(ctx, user.ID, enrollmentId)
+	if err != nil {
+		return dto.EnrollmentsResponseItemDTO{}, err
+	}
+
+	return dto.EnrollmentsResponseItemDTO{
+		ID:              enrollment.ID,
+		UserId:          enrollment.UserId,
+		StudyPlaceId:    enrollment.StudyPlaceId,
+		StudyPlaceTitle: enrollment.StudyPlaceTitle,
+		UserName:        enrollment.UserName,
+		Role:            enrollment.Role,
+		TypeId:          enrollment.TypeId,
+		Permissions:     enrollment.Permissions,
+		Accepted:        enrollment.Accepted,
 	}, nil
 }
 

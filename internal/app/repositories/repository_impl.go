@@ -48,15 +48,31 @@ func (r *repository) DeleteStudyPlaceById(ctx context.Context, studyPlaceId uuid
 	return databases.AssertRowAffectedErr(result, err)
 }
 
-func (r *repository) GetUserEnrollmentsPaginated(ctx context.Context, paginationQuery pagination.Query, userId uuid.UUID) ([]entities.Enrollment, int, error) {
+func (r *repository) GetUserEnrollmentsPaginated(ctx context.Context, paginationQuery pagination.Query, userId uuid.UUID) ([]entities.EnrollmentWithStudyPlace, int, error) {
+	paginationQuery.SetField("enrollments.created_at")
 	result, total, err := pagination.QueryPaginationContext(
 		ctx, r.database,
-		"SELECT id, user_id, study_place_id, user_name, role, type_id, permissions, accepted, blocked, created_at, updated_at FROM enrollments WHERE user_id = $1",
-		"SELECT count(*) FROM study_places",
+		`
+SELECT enrollments.id,
+       user_id,
+       study_place_id,
+       study_places.title,
+       user_name,
+       role,
+       type_id,
+       permissions,
+       accepted,
+       blocked,
+       enrollments.created_at,
+       enrollments.updated_at
+FROM enrollments
+INNER JOIN public.study_places on study_places.id = enrollments.study_place_id
+WHERE user_id = $1`,
+		"SELECT count(*) FROM enrollments",
 		paginationQuery,
 		userId,
 	)
-	rows, err := databases.ScanArrayErr(result, r.scanEnrollment, err)
+	rows, err := databases.ScanArrayErr(result, r.scanEnrollmentWithStudyPlace, err)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -82,13 +98,28 @@ func (r *repository) GetUserEnrollmentByUserIdAndStudyPlaceId(ctx context.Contex
 	return r.scanEnrollment(row)
 }
 
-func (r *repository) GetUserEnrollmentByIdAndUserId(ctx context.Context, userId, id uuid.UUID) (entities.Enrollment, error) {
+func (r *repository) GetUserEnrollmentByIdAndUserId(ctx context.Context, userId, id uuid.UUID) (entities.EnrollmentWithStudyPlace, error) {
 	row := r.database.QueryRowContext(ctx,
-		"SELECT id, user_id, study_place_id, user_name, role, type_id, permissions, accepted, blocked, created_at, updated_at FROM enrollments WHERE id = $1 AND user_id = $2",
+		`
+SELECT enrollments.id,
+       user_id,
+       study_place_id,
+       study_places.title,
+       user_name,
+       role,
+       type_id,
+       permissions,
+       accepted,
+       blocked,
+       enrollments.created_at,
+       enrollments.updated_at
+FROM enrollments
+INNER JOIN public.study_places on study_places.id = enrollments.study_place_id
+WHERE enrollments.id = $1 AND user_id = $2`,
 		id, userId,
 	)
 
-	return r.scanEnrollment(row)
+	return r.scanEnrollmentWithStudyPlace(row)
 }
 
 func (r *repository) CreateEnrollment(ctx context.Context, enrollment entities.Enrollment) error {

@@ -30,14 +30,15 @@ type StudyPlacesResponseDTO struct {
 }
 
 type EnrollmentsResponseItemDTO struct {
-	ID           uuid.UUID   `json:"id"`
-	UserId       uuid.UUID   `json:"userId"`
-	StudyPlaceId uuid.UUID   `json:"studyPlaceId"`
-	UserName     string      `json:"userName"`
-	Role         models.Role `json:"role"`
-	TypeId       uuid.UUID   `json:"typeId"`
-	Permissions  []string    `json:"permissions"`
-	Accepted     bool        `json:"accepted"`
+	ID              uuid.UUID   `json:"id"`
+	UserId          uuid.UUID   `json:"userId"`
+	StudyPlaceId    uuid.UUID   `json:"studyPlaceId"`
+	StudyPlaceTitle string      `json:"studyPlaceTitle"`
+	UserName        string      `json:"userName"`
+	Role            models.Role `json:"role"`
+	TypeId          uuid.UUID   `json:"typeId"`
+	Permissions     []string    `json:"permissions"`
+	Accepted        bool        `json:"accepted"`
 }
 
 type CreateStudyPlaceResponseDTO struct {

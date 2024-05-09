@@ -27,6 +27,7 @@ func (h *http) ConfigureRoutes() *hc.Engine {
 			enrollmentsGroup := withAuth.Group("enrollments")
 			{
 				enrollmentsGroup.GET("", middlewares.PaginationMiddleware(10), h.GetUserEnrollments)
+				enrollmentsGroup.GET(":id", h.GetUserEnrollmentById)
 				enrollmentsGroup.POST("", h.Enroll)
 				enrollmentsGroup.DELETE(":id", h.WithdrawEnrollmentById)
 				enrollmentsGroup.PUT("acceptance", h.SetEnrollmentAcceptance)

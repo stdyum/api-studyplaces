@@ -19,3 +19,8 @@ type Enrollment struct {
 	Accepted     bool
 	Blocked      bool
 }
+
+type EnrollmentWithStudyPlace struct {
+	Enrollment
+	StudyPlaceTitle string
+}

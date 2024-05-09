@@ -33,6 +33,24 @@ func (r *repository) scanEnrollment(row databases.Scan) (enrollment entities.Enr
 	return
 }
 
+func (r *repository) scanEnrollmentWithStudyPlace(row databases.Scan) (enrollment entities.EnrollmentWithStudyPlace, err error) {
+	err = row.Scan(
+		&enrollment.ID,
+		&enrollment.UserId,
+		&enrollment.StudyPlaceId,
+		&enrollment.StudyPlaceTitle,
+		&enrollment.UserName,
+		&enrollment.Role,
+		&enrollment.TypeId,
+		pq.Array(&enrollment.Permissions),
+		&enrollment.Accepted,
+		&enrollment.Blocked,
+		&enrollment.CreatedAt,
+		&enrollment.UpdatedAt,
+	)
+	return
+}
+
 func (r *repository) scanPreferences(row databases.Scan) (preferences entities.Preferences, err error) {
 	err = row.Scan(
 		&preferences.EnrollmentId,

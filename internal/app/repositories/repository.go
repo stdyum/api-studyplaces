@@ -15,10 +15,10 @@ type Repository interface {
 	CreateStudyPlace(ctx context.Context, studyPlace entities.StudyPlace) error
 	DeleteStudyPlaceById(ctx context.Context, studyPlaceId uuid.UUID) error
 
-	GetUserEnrollmentsPaginated(ctx context.Context, paginationQuery pagination.Query, userId uuid.UUID) ([]entities.Enrollment, int, error)
+	GetUserEnrollmentsPaginated(ctx context.Context, paginationQuery pagination.Query, userId uuid.UUID) ([]entities.EnrollmentWithStudyPlace, int, error)
 	GetUserEnrollmentById(ctx context.Context, id uuid.UUID) (entities.Enrollment, error)
 	GetUserEnrollmentByUserIdAndStudyPlaceId(ctx context.Context, userId, studyPlaceId uuid.UUID) (entities.Enrollment, error)
-	GetUserEnrollmentByIdAndUserId(ctx context.Context, userId uuid.UUID, id uuid.UUID) (entities.Enrollment, error)
+	GetUserEnrollmentByIdAndUserId(ctx context.Context, userId uuid.UUID, id uuid.UUID) (entities.EnrollmentWithStudyPlace, error)
 	CreateEnrollment(ctx context.Context, enrollment entities.Enrollment) error
 	SetEnrollmentAcceptance(ctx context.Context, enrollmentId uuid.UUID, accepted bool) error
 	SetEnrollmentBlocked(ctx context.Context, enrollmentId uuid.UUID, accepted bool) error

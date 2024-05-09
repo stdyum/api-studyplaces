@@ -25,6 +25,7 @@ type Controller interface {
 	CloseStudyPlaceById(ctx context.Context, user models.User, id uuid.UUID) error
 
 	GetUserEnrollments(ctx context.Context, user models.User, query pagination.CreatedAtPageQuery) (dto.EnrollmentsResponseDTO, error)
+	GetUserEnrollmentById(ctx context.Context, user models.User, id uuid.UUID) (dto.EnrollmentsResponseItemDTO, error)
 	Enroll(ctx context.Context, user models.User, request dto.EnrollRequestDTO) (dto.EnrollmentsResponseItemDTO, error)
 	WithdrawEnrollmentById(ctx context.Context, user models.User, enrollmentId uuid.UUID) error
 	SetEnrollmentAcceptance(ctx context.Context, user models.User, enrollmentId uuid.UUID, requestDTO dto.SetEnrollmentAcceptanceRequestDTO) error

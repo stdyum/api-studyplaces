@@ -83,6 +83,23 @@ func (h *http) GetUserEnrollments(ctx *hc.Context) {
 	ctx.JSON(netHttp.StatusOK, enrollments)
 }
 
+func (h *http) GetUserEnrollmentById(ctx *hc.Context) {
+	user := ctx.User()
+	id, err := ctx.UUIDParam("id")
+	if err != nil {
+		_ = ctx.Error(err)
+		return
+	}
+
+	enrollments, err := h.controller.GetUserEnrollmentById(ctx, user, id)
+	if err != nil {
+		_ = ctx.Error(err)
+		return
+	}
+
+	ctx.JSON(netHttp.StatusOK, enrollments)
+}
+
 func (h *http) Enroll(ctx *hc.Context) {
 	user := ctx.User()
 
