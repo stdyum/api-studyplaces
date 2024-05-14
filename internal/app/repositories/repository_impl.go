@@ -72,12 +72,8 @@ WHERE user_id = $1`,
 		paginationQuery,
 		userId,
 	)
-	rows, err := databases.ScanArrayErr(result, r.scanEnrollmentWithStudyPlace, err)
-	if err != nil {
-		return nil, 0, err
-	}
 
-	return rows, total, nil
+	return databases.ScanPaginationErr(result, r.scanEnrollmentWithStudyPlace, total, err)
 }
 
 func (r *repository) GetEnrollmentRequestsPaginated(ctx context.Context, paginationQuery pagination.Query, studyPlaceId uuid.UUID, accepted bool) ([]entities.Enrollment, int, error) {
