@@ -83,6 +83,27 @@ func (h *http) GetUserEnrollments(ctx *hc.Context) {
 	ctx.JSON(netHttp.StatusOK, enrollments)
 }
 
+func (h *http) GetStudyPlaceEnrollments(ctx *hc.Context) {
+	user := ctx.User()
+	query := ctx.PaginationQuery()
+	studyPlaceId := ctx.StudyPlaceId()
+	accepted, err := ctx.QueryBool("accepted")
+	if err != nil {
+		_ = ctx.Error(err)
+		return
+	}
+
+	token := ctx.GetHeader("Authorization")
+
+	enrollments, err := h.controller.GetEnrollmentRequests(ctx, studyPlaceId, token, user, query, accepted)
+	if err != nil {
+		_ = ctx.Error(err)
+		return
+	}
+
+	ctx.JSON(netHttp.StatusOK, enrollments)
+}
+
 func (h *http) GetUserEnrollmentById(ctx *hc.Context) {
 	user := ctx.User()
 	id, err := ctx.UUIDParam("id")
@@ -118,6 +139,28 @@ func (h *http) Enroll(ctx *hc.Context) {
 	ctx.JSON(netHttp.StatusCreated, enroll)
 }
 
+func (h *http) SetEnrollmentAcceptance(ctx *hc.Context) {
+	user := ctx.User()
+	id, err := ctx.UUIDParam("id")
+	if err != nil {
+		_ = ctx.Error(err)
+		return
+	}
+
+	var requestDTO dto.SetEnrollmentAcceptanceRequestDTO
+	if err = ctx.BindJSON(&requestDTO); err != nil {
+		_ = ctx.Error(err)
+		return
+	}
+
+	if err = h.controller.SetEnrollmentAcceptance(ctx, user, id, requestDTO); err != nil {
+		_ = ctx.Error(err)
+		return
+	}
+
+	ctx.Status(netHttp.StatusNoContent)
+}
+
 func (h *http) WithdrawEnrollmentById(ctx *hc.Context) {
 	user := ctx.User()
 	id, err := ctx.UUIDParam("id")
@@ -134,7 +177,7 @@ func (h *http) WithdrawEnrollmentById(ctx *hc.Context) {
 	ctx.Status(netHttp.StatusNoContent)
 }
 
-func (h *http) SetEnrollmentAcceptance(ctx *hc.Context) {
+func (h *http) PatchStudyPlaceEnrollment(ctx *hc.Context) {
 	user := ctx.User()
 	id, err := ctx.UUIDParam("id")
 	if err != nil {
@@ -142,13 +185,13 @@ func (h *http) SetEnrollmentAcceptance(ctx *hc.Context) {
 		return
 	}
 
-	var requestDTO dto.SetEnrollmentAcceptanceRequestDTO
-	if err = ctx.BindJSON(&requestDTO); err != nil {
+	var request dto.UpdateStudyPlaceEnrollmentRequestDTO
+	if err = ctx.BindJSON(&request); err != nil {
 		_ = ctx.Error(err)
 		return
 	}
 
-	if err = h.controller.SetEnrollmentAcceptance(ctx, user, id, requestDTO); err != nil {
+	if err = h.controller.UpdateStudyPlaceEnrollment(ctx, user, id, request); err != nil {
 		_ = ctx.Error(err)
 		return
 	}

@@ -34,3 +34,10 @@ type UpdatePreferencesRequestDTO struct {
 	Group       models.PreferenceGroup `json:"group"`
 	Preferences any                    `json:"preferences"`
 }
+
+type UpdateStudyPlaceEnrollmentRequestDTO struct {
+	UserName    string    `json:"userName"`
+	Role        string    `json:"role"`
+	TypeId      uuid.UUID `json:"typeId"`
+	Permissions []string  `json:"permissions"`
+}

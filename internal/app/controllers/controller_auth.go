@@ -32,6 +32,11 @@ func (c *controller) assertEnrollmentPermissions(enrollment entities.Enrollment,
 	for _, permission := range permissions {
 		found := false
 		for _, hasPermission := range enrollment.Permissions {
+			if hasPermission == "admin" {
+				found = true
+				break
+			}
+
 			if hasPermission == string(permission) {
 				found = true
 				break

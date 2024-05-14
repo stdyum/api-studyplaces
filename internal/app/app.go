@@ -9,13 +9,14 @@ import (
 	"github.com/stdyum/api-studyplaces/internal/app/errors"
 	"github.com/stdyum/api-studyplaces/internal/app/handlers"
 	"github.com/stdyum/api-studyplaces/internal/app/repositories"
+	"github.com/stdyum/api-studyplaces/internal/modules/types_registry"
 )
 
-func New(database *sql.DB, authServer auth.AuthClient) (server.Routes, error) {
+func New(database *sql.DB, authServer auth.AuthClient, registry types_registry.Controller) (server.Routes, error) {
 	repo := repositories.New(database)
 	authRepo := repositories.NewAuth(authServer)
 
-	ctrl := controllers.New(repo, authRepo)
+	ctrl := controllers.New(repo, authRepo, registry)
 
 	errors.Register()
 

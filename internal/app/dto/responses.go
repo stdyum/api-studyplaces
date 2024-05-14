@@ -37,6 +37,7 @@ type EnrollmentsResponseItemDTO struct {
 	UserName        string      `json:"userName"`
 	Role            models.Role `json:"role"`
 	TypeId          uuid.UUID   `json:"typeId"`
+	TypeTitle       string      `json:"typeTitle"`
 	Permissions     []string    `json:"permissions"`
 	Accepted        bool        `json:"accepted"`
 }

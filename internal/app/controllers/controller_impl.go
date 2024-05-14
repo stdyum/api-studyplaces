@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stdyum/api-common/databases/pagination"
 	timed "github.com/stdyum/api-common/entities"
+	"github.com/stdyum/api-common/errors"
 	"github.com/stdyum/api-common/models"
 	"github.com/stdyum/api-studyplaces/internal/app/dto"
 	"github.com/stdyum/api-studyplaces/internal/app/entities"
@@ -172,6 +173,93 @@ func (c *controller) GetUserEnrollments(ctx context.Context, user models.User, q
 	}, nil
 }
 
+func (c *controller) GetEnrollmentRequests(ctx context.Context, studyPlaceId uuid.UUID, token string, user models.User, query pagination.CreatedAtPageQuery, accepted bool) (dto.EnrollmentsResponseDTO, error) {
+	enrollment, err := c.repository.GetUserEnrollmentByUserIdAndStudyPlaceId(ctx, user.ID, studyPlaceId)
+	if err != nil {
+		return dto.EnrollmentsResponseDTO{}, err
+	}
+
+	mPermissions := make(models.Permissions, len(enrollment.Permissions))
+	for i, permission := range enrollment.Permissions {
+		mPermissions[i] = models.Permission(permission)
+	}
+
+	mEnrollment := models.Enrollment{
+		Token:        token,
+		ID:           enrollment.ID,
+		UserId:       enrollment.UserId,
+		StudyPlaceId: enrollment.StudyPlaceId,
+		UserName:     enrollment.UserName,
+		Role:         enrollment.Role,
+		TypeId:       enrollment.TypeId,
+		Permissions:  mPermissions,
+		Accepted:     enrollment.Accepted,
+		Blocked:      enrollment.Blocked,
+	}
+
+	if _, err = c.enrollmentAuth(ctx, user.ID, studyPlaceId, models.PermissionEnrollments); err != nil {
+		return dto.EnrollmentsResponseDTO{}, err
+	}
+
+	rows, total, err := c.repository.GetEnrollmentRequestsPaginated(ctx, &query, studyPlaceId, accepted)
+	if err != nil {
+		return dto.EnrollmentsResponseDTO{}, err
+	}
+
+	typeIds := models.TypesIds{
+		StudentIds:  nil,
+		TeachersIds: nil,
+	}
+
+	for _, row := range rows {
+		switch row.Role {
+		case models.RoleStudent:
+			typeIds.StudentIds = append(typeIds.StudentIds, row.TypeId)
+		case models.RoleTeacher:
+			typeIds.TeachersIds = append(typeIds.TeachersIds, row.TypeId)
+		}
+	}
+
+	types, err := c.registry.GetTypesByIds(ctx, mEnrollment, typeIds)
+	if err != nil {
+		return dto.EnrollmentsResponseDTO{}, err
+	}
+
+	timedRows := make([]timed.Timed, len(rows))
+	enrollments := make([]dto.EnrollmentsResponseItemDTO, len(rows))
+	for i, row := range rows {
+		var typeTitle string
+		switch row.Role {
+		case models.RoleStudent:
+			typeTitle = types.StudentIds[row.TypeId].Name
+		case models.RoleTeacher:
+			typeTitle = types.TeachersIds[row.TypeId].Name
+		}
+
+		timedRows[i] = row.Timed
+		enrollments[i] = dto.EnrollmentsResponseItemDTO{
+			ID:           row.ID,
+			UserId:       row.UserId,
+			StudyPlaceId: row.StudyPlaceId,
+			UserName:     row.UserName,
+			Role:         row.Role,
+			TypeId:       row.TypeId,
+			TypeTitle:    typeTitle,
+			Permissions:  row.Permissions,
+			Accepted:     row.Accepted,
+		}
+	}
+
+	return dto.EnrollmentsResponseDTO{
+		Items:    enrollments,
+		PerPage:  query.QPerPage,
+		Total:    total,
+		Page:     query.QPage,
+		Next:     pagination.GetNextCreatedAtQuery(timedRows, total, &query),
+		Previous: pagination.GetPreviousCreatedAtQuery(timedRows, &query),
+	}, nil
+}
+
 func (c *controller) GetUserEnrollmentById(ctx context.Context, user models.User, enrollmentId uuid.UUID) (dto.EnrollmentsResponseItemDTO, error) {
 	enrollment, err := c.repository.GetUserEnrollmentByIdAndUserId(ctx, user.ID, enrollmentId)
 	if err != nil {
@@ -236,8 +324,13 @@ func (c *controller) SetEnrollmentAcceptance(ctx context.Context, user models.Us
 		return err
 	}
 
-	if _, err = c.enrollmentAuth(ctx, user.ID, enrollment.StudyPlaceId, models.PermissionEnrollments); err != nil {
+	userEnrollment, err := c.enrollmentAuth(ctx, user.ID, enrollment.StudyPlaceId, models.PermissionEnrollments)
+	if err != nil {
 		return err
+	}
+
+	if enrollmentId == userEnrollment.ID {
+		return errors.WrapString(ErrValidation, "cannot change yourself enrollment")
 	}
 
 	return c.repository.SetEnrollmentAcceptance(ctx, enrollmentId, requestDTO.Accepted)
@@ -253,7 +346,7 @@ func (c *controller) SetEnrollmentBlocked(ctx context.Context, user models.User,
 		return err
 	}
 
-	return c.repository.SetEnrollmentAcceptance(ctx, enrollmentId, requestDTO.Blocked)
+	return c.repository.SetEnrollmentBlocked(ctx, enrollmentId, requestDTO.Blocked)
 }
 
 func (c *controller) GetEnrollmentPreferences(ctx context.Context, user models.User, enrollmentId uuid.UUID) (dto.PreferencesResponseDTO, error) {
@@ -291,4 +384,31 @@ func (c *controller) UpdateEnrollmentPreferences(ctx context.Context, user model
 	}
 
 	return c.repository.UpdatePreferences(ctx, enrollment.ID, string(requestDTO.Group), preferencesBytes)
+}
+
+func (c *controller) UpdateStudyPlaceEnrollment(ctx context.Context, user models.User, enrollmentId uuid.UUID, request dto.UpdateStudyPlaceEnrollmentRequestDTO) error {
+	enrollment, err := c.repository.GetUserEnrollmentById(ctx, enrollmentId)
+	if err != nil {
+		return err
+	}
+
+	userEnrollment, err := c.enrollmentAuth(ctx, user.ID, enrollment.StudyPlaceId, models.PermissionAdmin)
+	if err != nil {
+		return err
+	}
+
+	if enrollmentId == userEnrollment.ID {
+		return errors.WrapString(ErrValidation, "cannot change yourself enrollment")
+	}
+
+	entity := entities.Enrollment{
+		ID:           enrollmentId,
+		StudyPlaceId: userEnrollment.StudyPlaceId,
+		UserName:     request.UserName,
+		Role:         models.Role(request.Role),
+		TypeId:       request.TypeId,
+		Permissions:  request.Permissions,
+	}
+
+	return c.repository.PatchEnrollment(ctx, entity)
 }

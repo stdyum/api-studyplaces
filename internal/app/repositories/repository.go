@@ -16,6 +16,7 @@ type Repository interface {
 	DeleteStudyPlaceById(ctx context.Context, studyPlaceId uuid.UUID) error
 
 	GetUserEnrollmentsPaginated(ctx context.Context, paginationQuery pagination.Query, userId uuid.UUID) ([]entities.EnrollmentWithStudyPlace, int, error)
+	GetEnrollmentRequestsPaginated(ctx context.Context, paginationQuery pagination.Query, studyPlaceId uuid.UUID, accepted bool) ([]entities.Enrollment, int, error)
 	GetUserEnrollmentById(ctx context.Context, id uuid.UUID) (entities.Enrollment, error)
 	GetUserEnrollmentByUserIdAndStudyPlaceId(ctx context.Context, userId, studyPlaceId uuid.UUID) (entities.Enrollment, error)
 	GetUserEnrollmentByIdAndUserId(ctx context.Context, userId uuid.UUID, id uuid.UUID) (entities.EnrollmentWithStudyPlace, error)
@@ -27,6 +28,8 @@ type Repository interface {
 	CreatePreferences(ctx context.Context, preferences entities.Preferences) error
 	GetPreferences(ctx context.Context, enrollmentId uuid.UUID) (entities.Preferences, error)
 	UpdatePreferences(ctx context.Context, enrollmentId uuid.UUID, group string, preferences []byte) error
+
+	PatchEnrollment(ctx context.Context, enrollment entities.Enrollment) error
 }
 
 type repository struct {

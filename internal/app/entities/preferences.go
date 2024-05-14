@@ -10,7 +10,7 @@ type Preferences struct {
 	entities.Timed
 
 	EnrollmentId uuid.UUID
-	Website      pgtype.JSON
-	Schedule     pgtype.JSON
-	Journal      pgtype.JSON
+	Website      *pgtype.JSON
+	Schedule     *pgtype.JSON
+	Journal      *pgtype.JSON
 }

@@ -68,11 +68,41 @@ SELECT enrollments.id,
 FROM enrollments
 INNER JOIN public.study_places on study_places.id = enrollments.study_place_id
 WHERE user_id = $1`,
-		"SELECT count(*) FROM enrollments",
+		"SELECT count(*) FROM enrollments WHERE user_id = $1",
 		paginationQuery,
 		userId,
 	)
 	rows, err := databases.ScanArrayErr(result, r.scanEnrollmentWithStudyPlace, err)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return rows, total, nil
+}
+
+func (r *repository) GetEnrollmentRequestsPaginated(ctx context.Context, paginationQuery pagination.Query, studyPlaceId uuid.UUID, accepted bool) ([]entities.Enrollment, int, error) {
+	result, total, err := pagination.QueryPaginationContext(
+		ctx, r.database,
+		`
+SELECT id,
+       user_id,
+       study_place_id,
+       user_name,
+       role,
+       type_id,
+       permissions,
+       accepted,
+       blocked,
+       created_at,
+       updated_at
+FROM enrollments
+WHERE study_place_id = $1 AND accepted = $2 AND NOT blocked`,
+		"SELECT count(*) FROM enrollments WHERE study_place_id = $1 AND accepted = $2 AND NOT blocked",
+		paginationQuery,
+		studyPlaceId,
+		accepted,
+	)
+	rows, err := databases.ScanArrayErr(result, r.scanEnrollment, err)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -183,4 +213,24 @@ func (r *repository) GetPreferences(ctx context.Context, enrollmentId uuid.UUID)
 	)
 
 	return r.scanPreferences(row)
+}
+
+func (r *repository) PatchEnrollment(ctx context.Context, enrollment entities.Enrollment) error {
+	result, err := r.database.ExecContext(ctx, `
+UPDATE enrollments SET 
+	user_name = COALESCE(NULLIF($1, ''), user_name), 
+	role = COALESCE(NULLIF($2, ''), role::text)::role, 
+	type_id = COALESCE(NULLIF($3, uuid_nil()), type_id),
+	permissions = COALESCE(NULLIF($4, array[]::varchar[]), permissions)
+WHERE study_place_id = $5 AND id = $6
+`,
+		enrollment.UserName,
+		enrollment.Role,
+		enrollment.TypeId,
+		pq.Array(enrollment.Permissions),
+		enrollment.StudyPlaceId,
+		enrollment.ID,
+	)
+
+	return databases.AssertRowAffectedErr(result, err)
 }

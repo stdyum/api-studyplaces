@@ -20,8 +20,16 @@ func (h *http) ConfigureRoutes() *hc.Engine {
 		{
 			studyplacesGroup := withAuth.Group("studyplaces")
 			{
-				studyplacesGroup.POST("", middlewares.AuthMiddleware(), h.RegisterStudyPlace)
-				studyplacesGroup.DELETE(":id", middlewares.AuthMiddleware(), h.CloseStudyPlaceById)
+				studyplacesGroup.POST("", h.RegisterStudyPlace)
+				studyplacesGroup.DELETE(":id", h.CloseStudyPlaceById)
+
+				enrollmentsGroup := studyplacesGroup.Group("enrollments", middlewares.StudyPlaceMiddleware())
+				{
+					enrollmentsGroup.GET("", middlewares.PaginationMiddleware(10), h.GetStudyPlaceEnrollments)
+					enrollmentsGroup.PATCH(":id", h.PatchStudyPlaceEnrollment)
+					enrollmentsGroup.POST("accept/:id", h.SetEnrollmentAcceptance)
+					enrollmentsGroup.POST("block/:id", h.SetEnrollmentBlocked)
+				}
 			}
 
 			enrollmentsGroup := withAuth.Group("enrollments")
@@ -30,8 +38,6 @@ func (h *http) ConfigureRoutes() *hc.Engine {
 				enrollmentsGroup.GET(":id", h.GetUserEnrollmentById)
 				enrollmentsGroup.POST("", h.Enroll)
 				enrollmentsGroup.DELETE(":id", h.WithdrawEnrollmentById)
-				enrollmentsGroup.PUT("acceptance", h.SetEnrollmentAcceptance)
-				enrollmentsGroup.PUT("blocked", h.SetEnrollmentBlocked)
 			}
 
 			preferencesGroup := withAuth.Group("preferences")

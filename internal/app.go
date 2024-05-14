@@ -4,6 +4,7 @@ import (
 	"github.com/stdyum/api-common/grpc/clients"
 	"github.com/stdyum/api-studyplaces/internal/app"
 	"github.com/stdyum/api-studyplaces/internal/config"
+	"github.com/stdyum/api-studyplaces/internal/modules/types_registry"
 )
 
 func App() error {
@@ -18,7 +19,14 @@ func App() error {
 	}
 	clients.AuthGRpcClient = authServer
 
-	routes, err := app.New(db, authServer)
+	typesRegistryClient, err := config.ConnectToTypesRegistryServer(config.Config.TypesRegistryGRpc)
+	if err != nil {
+		return err
+	}
+
+	typesRegistry := types_registry.New(typesRegistryClient)
+
+	routes, err := app.New(db, authServer, typesRegistry)
 	if err != nil {
 		return err
 	}

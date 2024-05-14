@@ -8,9 +8,10 @@ import (
 var Config Model
 
 type Model struct {
-	Ports    server.PortConfig `env:"PORT"`
-	Database DatabaseConfig    `env:"DATABASE"`
-	AuthGRpc AuthGRpcConfig    `env:"GRPC_AUTH"`
+	Ports             server.PortConfig       `env:"PORT"`
+	Database          DatabaseConfig          `env:"DATABASE"`
+	AuthGRpc          AuthGRpcConfig          `env:"GRPC_AUTH"`
+	TypesRegistryGRpc TypesRegistryGRpcConfig `env:"GRPC_TYPES_REGISTRY"`
 }
 
 func init() {

@@ -15,8 +15,11 @@ type HTTP interface {
 	CloseStudyPlaceById(ctx *hc.Context)
 
 	GetUserEnrollments(ctx *hc.Context)
+	GetStudyPlaceEnrollments(ctx *hc.Context)
+	GetUserEnrollmentById(ctx *hc.Context)
 	Enroll(ctx *hc.Context)
 	WithdrawEnrollmentById(ctx *hc.Context)
+	PatchStudyPlaceEnrollment(ctx *hc.Context)
 	SetEnrollmentAcceptance(ctx *hc.Context)
 	SetEnrollmentBlocked(ctx *hc.Context)
 

@@ -9,6 +9,7 @@ import (
 	"github.com/stdyum/api-common/models"
 	"github.com/stdyum/api-studyplaces/internal/app/dto"
 	"github.com/stdyum/api-studyplaces/internal/app/repositories"
+	"github.com/stdyum/api-studyplaces/internal/modules/types_registry"
 )
 
 var (
@@ -25,6 +26,7 @@ type Controller interface {
 	CloseStudyPlaceById(ctx context.Context, user models.User, id uuid.UUID) error
 
 	GetUserEnrollments(ctx context.Context, user models.User, query pagination.CreatedAtPageQuery) (dto.EnrollmentsResponseDTO, error)
+	GetEnrollmentRequests(ctx context.Context, studyPlaceId uuid.UUID, token string, user models.User, query pagination.CreatedAtPageQuery, accepted bool) (dto.EnrollmentsResponseDTO, error)
 	GetUserEnrollmentById(ctx context.Context, user models.User, id uuid.UUID) (dto.EnrollmentsResponseItemDTO, error)
 	Enroll(ctx context.Context, user models.User, request dto.EnrollRequestDTO) (dto.EnrollmentsResponseItemDTO, error)
 	WithdrawEnrollmentById(ctx context.Context, user models.User, enrollmentId uuid.UUID) error
@@ -33,16 +35,20 @@ type Controller interface {
 
 	GetEnrollmentPreferences(ctx context.Context, user models.User, enrollmentId uuid.UUID) (dto.PreferencesResponseDTO, error)
 	UpdateEnrollmentPreferences(ctx context.Context, user models.User, enrollmentId uuid.UUID, preferences dto.UpdatePreferencesRequestDTO) error
+
+	UpdateStudyPlaceEnrollment(ctx context.Context, user models.User, enrollmentId uuid.UUID, request dto.UpdateStudyPlaceEnrollmentRequestDTO) error
 }
 
 type controller struct {
 	repository     repositories.Repository
 	authRepository repositories.AuthRepository
+	registry       types_registry.Controller
 }
 
-func New(repository repositories.Repository, authRepository repositories.AuthRepository) Controller {
+func New(repository repositories.Repository, authRepository repositories.AuthRepository, registry types_registry.Controller) Controller {
 	return &controller{
 		repository:     repository,
 		authRepository: authRepository,
+		registry:       registry,
 	}
 }
