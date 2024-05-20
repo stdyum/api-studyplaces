@@ -349,8 +349,8 @@ func (c *controller) SetEnrollmentBlocked(ctx context.Context, user models.User,
 	return c.repository.SetEnrollmentBlocked(ctx, enrollmentId, requestDTO.Blocked)
 }
 
-func (c *controller) GetEnrollmentPreferences(ctx context.Context, user models.User, enrollmentId uuid.UUID) (dto.PreferencesResponseDTO, error) {
-	enrollment, err := c.repository.GetUserEnrollmentByIdAndUserId(ctx, user.ID, enrollmentId)
+func (c *controller) GetEnrollmentPreferences(ctx context.Context, user models.User, studyPlaceId uuid.UUID) (dto.PreferencesResponseDTO, error) {
+	enrollment, err := c.repository.GetUserEnrollmentByUserIdAndStudyPlaceId(ctx, user.ID, studyPlaceId)
 	if err != nil {
 		return dto.PreferencesResponseDTO{}, err
 	}
@@ -368,8 +368,8 @@ func (c *controller) GetEnrollmentPreferences(ctx context.Context, user models.U
 	}, nil
 }
 
-func (c *controller) UpdateEnrollmentPreferences(ctx context.Context, user models.User, enrollmentId uuid.UUID, requestDTO dto.UpdatePreferencesRequestDTO) error {
-	enrollment, err := c.repository.GetUserEnrollmentByIdAndUserId(ctx, user.ID, enrollmentId)
+func (c *controller) UpdateEnrollmentPreferences(ctx context.Context, user models.User, studyPlaceId uuid.UUID, requestDTO dto.UpdatePreferencesRequestDTO) error {
+	enrollment, err := c.repository.GetUserEnrollmentByUserIdAndStudyPlaceId(ctx, user.ID, studyPlaceId)
 	if err != nil {
 		return err
 	}

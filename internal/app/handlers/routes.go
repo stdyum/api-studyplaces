@@ -40,10 +40,10 @@ func (h *http) ConfigureRoutes() *hc.Engine {
 				enrollmentsGroup.DELETE(":id", h.WithdrawEnrollmentById)
 			}
 
-			preferencesGroup := withAuth.Group("preferences")
+			preferencesGroup := withAuth.Group("preferences", middlewares.StudyPlaceMiddleware())
 			{
-				preferencesGroup.GET(":id", h.GetEnrollmentPreferences)
-				preferencesGroup.PUT(":id", h.UpdateEnrollmentPreferences)
+				preferencesGroup.GET("", h.GetEnrollmentPreferences)
+				preferencesGroup.PUT("", h.UpdateEnrollmentPreferences)
 			}
 		}
 	}

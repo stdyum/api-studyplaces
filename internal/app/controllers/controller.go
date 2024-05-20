@@ -33,8 +33,8 @@ type Controller interface {
 	SetEnrollmentAcceptance(ctx context.Context, user models.User, enrollmentId uuid.UUID, requestDTO dto.SetEnrollmentAcceptanceRequestDTO) error
 	SetEnrollmentBlocked(ctx context.Context, user models.User, enrollmentId uuid.UUID, requestDTO dto.SetEnrollmentBlockedRequestDTO) error
 
-	GetEnrollmentPreferences(ctx context.Context, user models.User, enrollmentId uuid.UUID) (dto.PreferencesResponseDTO, error)
-	UpdateEnrollmentPreferences(ctx context.Context, user models.User, enrollmentId uuid.UUID, preferences dto.UpdatePreferencesRequestDTO) error
+	GetEnrollmentPreferences(ctx context.Context, user models.User, studyPlaceId uuid.UUID) (dto.PreferencesResponseDTO, error)
+	UpdateEnrollmentPreferences(ctx context.Context, user models.User, studyPlaceId uuid.UUID, preferences dto.UpdatePreferencesRequestDTO) error
 
 	UpdateStudyPlaceEnrollment(ctx context.Context, user models.User, enrollmentId uuid.UUID, request dto.UpdateStudyPlaceEnrollmentRequestDTO) error
 }

@@ -223,7 +223,7 @@ func (h *http) SetEnrollmentBlocked(ctx *hc.Context) {
 
 func (h *http) GetEnrollmentPreferences(ctx *hc.Context) {
 	user := ctx.User()
-	id, err := ctx.UUIDParam("id")
+	id := ctx.StudyPlaceId()
 
 	preferences, err := h.controller.GetEnrollmentPreferences(ctx, user, id)
 	if err != nil {
@@ -236,19 +236,15 @@ func (h *http) GetEnrollmentPreferences(ctx *hc.Context) {
 
 func (h *http) UpdateEnrollmentPreferences(ctx *hc.Context) {
 	user := ctx.User()
-	id, err := ctx.UUIDParam("id")
-	if err != nil {
-		_ = ctx.Error(err)
-		return
-	}
+	id := ctx.StudyPlaceId()
 
 	var requestDTO dto.UpdatePreferencesRequestDTO
-	if err = ctx.BindJSON(&requestDTO); err != nil {
+	if err := ctx.BindJSON(&requestDTO); err != nil {
 		_ = ctx.Error(err)
 		return
 	}
 
-	if err = h.controller.UpdateEnrollmentPreferences(ctx, user, id, requestDTO); err != nil {
+	if err := h.controller.UpdateEnrollmentPreferences(ctx, user, id, requestDTO); err != nil {
 		_ = ctx.Error(err)
 		return
 	}
